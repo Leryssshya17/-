@@ -1,0 +1,118 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <cctype>
+
+using namespace std;
+
+const int BOARD_SIZE = 8;
+
+enum Piece { EMPTY, PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING };
+enum Color { NONE, WHITE, BLACK };
+
+struct Cell {
+    Piece piece;
+    Color color;
+};
+
+class ChessBoard {
+public:
+    ChessBoard() {
+        board.resize(BOARD_SIZE, vector<Cell>(BOARD_SIZE, { EMPTY, NONE }));
+        setupBoard();
+    }
+
+    void display() {
+        cout << "  A B C D E F G H\n";
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            cout << 8 - i << " ";
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                char symbol = ' ';
+                if (board[i][j].piece != EMPTY) {
+                    if (board[i][j].color == WHITE) {
+                        symbol = getPieceSymbol(board[i][j].piece);
+                    }
+                    else {
+                        symbol = tolower(getPieceSymbol(board[i][j].piece));
+                    }
+                }
+                cout << symbol << " ";
+            }
+            cout << 8 - i << endl;
+        }
+        cout << "  A B C D E F G H\n";
+    }
+
+    bool movePiece(char fromCol, int fromRow, char toCol, int toRow) {
+        int fromX = 8 - fromRow;
+        int fromY = fromCol - 'A';
+        int toX = 8 - toRow;
+        int toY = toCol - 'A';
+
+        // Простейшая проверка на движение
+        if (fromX < 0 || fromX >= BOARD_SIZE || fromY < 0 || fromY >= BOARD_SIZE ||
+            toX < 0 || toX >= BOARD_SIZE || toY < 0 || toY >= BOARD_SIZE) {
+            cout << "Недопустимый ход!" << endl;
+            return false;
+        }
+
+        if (board[fromX][fromY].piece == EMPTY) {
+            cout << "Нет фигуры для хода!" << endl;
+            return false;
+        }
+
+        // Выполняем движение
+        board[toX][toY] = board[fromX][fromY];
+        board[fromX][fromY] = { EMPTY, NONE };
+        return true;
+    }
+
+private:
+    vector<vector<Cell>> board;
+
+    void setupBoard() {
+        // Настройка изначальных фигур
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            board[1][i] = { PAWN, WHITE };
+            board[6][i] = { PAWN, BLACK };
+        }
+        board[0] = { { ROOK, WHITE }, { KNIGHT, WHITE }, { BISHOP, WHITE }, { QUEEN, WHITE }, { KING, WHITE }, { BISHOP, WHITE }, { KNIGHT, WHITE }, { ROOK, WHITE } };
+        board[7] = { { ROOK, BLACK }, { KNIGHT, BLACK }, { BISHOP, BLACK }, { QUEEN, BLACK }, { KING, BLACK }, { BISHOP, BLACK }, { KNIGHT, BLACK }, { ROOK, BLACK } };
+    }
+
+    char getPieceSymbol(Piece piece) {
+        switch (piece) {
+        case PAWN: return 'P';
+        case ROOK: return 'R';
+        case KNIGHT: return 'N';
+        case BISHOP: return 'B';
+        case QUEEN: return 'Q';
+        case KING: return 'K';
+        default: return ' ';
+        }
+    }
+};
+
+int main() {
+    setlocale(LC_ALL, "ru-RU");
+    ChessBoard board;
+    board.display();
+
+    string input;
+    while (true) {
+        cout << "Введите ход (например, E2 E4) или 'exit' для выхода: ";
+        getline(cin, input);
+        if (input == "exit")
+            break;
+
+        char fromCol = input[0];
+        int fromRow = input[1] - '0';
+        char toCol = input[3];
+        int toRow = input[4] - '0';
+
+        board.movePiece(fromCol, fromRow, toCol, toRow);
+        board.display();
+    }
+
+    return 0;
+}
